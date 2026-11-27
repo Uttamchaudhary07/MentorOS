@@ -139,3 +139,17 @@ test('legacy Java checkpoint questions and previously passed lessons remain acce
   const failed = { ...initialProfile, goal: 'java', attempts: [{ mode: 'check', subject: 'java-search', answers: ['wrong'], score: 0, total: 2, at: 100 }] };
   assert.equal(learningPlan(failed, 101)[0].topic.id, 'java-setup');
 });
+
+test('every Java and DSA lesson has a complete program and a runnable walkthrough', () => {
+  for (const track of [getTrack('java'), getTrack('dsa')]) {
+    for (const topic of track.topics) {
+      assert.match(topic.example, /public class Main\s*\{/, topic.id);
+      assert.match(topic.example, /public static void main\(String\[\] args\)/, topic.id);
+      assert.equal(topic.walkthrough.file, 'Main.java', topic.id);
+      assert.match(topic.walkthrough.commands, /javac/, topic.id);
+      assert.ok(topic.walkthrough.output.trim(), topic.id);
+      assert.ok(topic.walkthrough.steps.length >= 3, topic.id);
+      assert.ok(topic.walkthrough.steps.every(([title, detail]) => title.trim() && detail.trim()), topic.id);
+    }
+  }
+});

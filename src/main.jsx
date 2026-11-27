@@ -383,10 +383,11 @@ function Lesson({ topic, profile }) {
     <pre><code>{topic.example}</code></pre>
     {walkthrough && <>
       <h3>Step by step</h3>
-      <ol>
+      <ol className="example-steps">
         {walkthrough.steps.map(([title, description]) => <li key={title}><strong>{title}</strong><p>{description}</p></li>)}
       </ol>
       <h3>Compile and run</h3>
+      {walkthrough.details && <p>{walkthrough.details}</p>}
       <pre><code>{walkthrough.commands}</code></pre>
       <h3>Expected output</h3>
       <pre><code>{walkthrough.output}</code></pre>

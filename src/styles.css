@@ -271,3 +271,5 @@ input[type=checkbox], input[type=radio] { accent-color: var(--blue); width: 16px
 .trace-cells li { display: grid; place-items: center; padding: .4rem .1rem; background: #eaf0ff; border: 1px solid #cbd9ff; border-radius: .38rem; }
 .trace-cells li.trace-mid { background: #3156d9; color: white; border-color: #3156d9; }
 .trace-cells li.trace-excluded { background: #f5f6f9; border-color: var(--line); color: #61718b; }
+
+.example-steps { display: grid; gap: .65rem; padding-inline-start: 1.5rem; }

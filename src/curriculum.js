@@ -5,6 +5,7 @@ import { advanced } from './paths/advanced.js';
 import { java } from './paths/java.js';
 import { javaCore } from './paths/java-core.js';
 import { javaSequence } from './paths/java-sequence.js';
+import { javaExamples } from './paths/java-examples/index.js';
 import { foundations } from './paths/dsa/foundations.js';
 import { structures } from './paths/dsa/structures.js';
 import { graphs } from './paths/dsa/graphs.js';
@@ -401,6 +402,7 @@ export const tracks = paths.map(path => {
       subject: mixed ? path.id : id,
       topics: module.topics.map((topic, index) => ({
         ...topic,
+        ...javaExamples[topic.id],
         trackId: path.id,
         moduleId: id,
         level: ++level,
