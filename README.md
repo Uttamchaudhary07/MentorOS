@@ -7,6 +7,8 @@ A browser-based learning workspace for HTML, CSS, JavaScript, React, Node.js, Ex
 - **Java** includes 65 lessons across syntax, the type system, object design, generics, the standard library, concurrency, JVM tooling, testing, packaging, data access, and projects.
 - **DSA with Java** includes 55 lessons across complexity, arrays and hashing, searching and sorting, linear structures, trees and heaps, graphs, greedy and backtracking, dynamic programming, text algorithms, range queries, and advanced patterns.
 
+Every DSA lesson includes a Java example, a step-by-step trace, the invariant that makes the algorithm work, time and space costs, and concrete edge cases. The lessons explain when a change in the input or workload makes a different algorithm a better fit. Each module includes a complete Java program with boundary checks that you can save as `Main.java` and run with `java Main.java` on JDK 17 or later.
+
 Choose either course as a goal in My Learning Plan. For complete API and specification references, see [Dev.java](https://dev.java/learn/), the [Java SE API](https://docs.oracle.com/en/java/javase/25/docs/api/index.html), and the [NIST algorithms dictionary](https://xlinux.nist.gov/dads/).
 
 ## Run locally

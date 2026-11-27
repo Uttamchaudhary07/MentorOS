@@ -10,6 +10,7 @@ import { initialProfile, ready, recordAttempt, modulePassed } from './progress.j
 import { learningPlan, formats } from './learning-plan.js';
 import { exercises, evaluateExercise } from './code-lab.js';
 import BinarySearchWalkthrough from './binary-search-walkthrough.jsx';
+import { AlgorithmDecisions, AlgorithmTrace, JavaExample } from './dsa-lesson.jsx';
 import './styles.css';
 
 const storage = 'learnos-profile-v1';
@@ -331,9 +332,15 @@ function Library({ page, initialTopic, profile }) {
 
 function Track({ track, profile }) {
   const count = track.topics.filter(topic => profile.passed[topic.id]).length;
+  const nextDsaTopic = track.id === 'dsa' && track.topics.find(topic => !profile.passed[topic.id] && ready(topic, profile));
   return <>
     <NavLink page="topics" className="back-link"><ChevronLeft size={17} /> My Topics</NavLink>
     <Heading title={track.name} description={track.label + ` · ${count} of ${track.topics.length} topics passed`} badge={<Badge track={track} />} />
+    {nextDsaTopic && <section className="panel content-panel stack-section">
+      <h2>{count ? 'Continue learning DSA' : 'Start learning DSA'}</h2>
+      <p>{nextDsaTopic.title}</p>
+      <NavLink page="lesson" id={nextDsaTopic.id} className="button primary">Open lesson <ChevronRight size={15} /></NavLink>
+    </section>}
     <div className="stack">
       {track.modules.map((module, index) => (
         <details className="panel curriculum-module" key={module.id} open={index === 0 ? true : undefined}>
@@ -355,11 +362,16 @@ function Track({ track, profile }) {
 }
 
 function Rules({ topic }) {
-  return <dl className="rules-list">
+  return <><dl className="rules-list">
     <div><dt><Target size={17} /> How to spot it</dt><dd>{topic.cues}</dd></div>
     <div><dt><Lightbulb size={17} /> Rule to remember</dt><dd>{topic.rule}</dd></div>
     <div><dt><CircleHelp size={17} /> Edge cases to try</dt><dd>{topic.edges}</dd></div>
-  </dl>;
+  </dl>
+    {topic.guide && <dl className="algorithm-decisions space-top">
+      <div><dt>Edge cases and what breaks</dt><dd>{topic.guide.edge}</dd></div>
+      <div><dt>When to switch algorithms</dt><dd>{topic.guide.upgrade}</dd></div>
+    </dl>}
+  </>;
 }
 
 function Practice({ topic }) {
@@ -377,13 +389,28 @@ function Lesson({ topic, profile }) {
   const track = getTrack(topic.trackId);
   const isReady = ready(topic, profile);
   const [format, setFormat] = useState(profile.format);
+  const guide = topic.guide;
   const example = <section className="panel content-panel" key="example">
-    <h2>Worked example</h2><pre><code>{topic.example}</code></pre>
-    <h3>How it works</h3><p>{topic.explanation}</p>
+    <h2>{guide ? topic.javaProgram ? 'Runnable Java example' : 'Java implementation excerpt' : 'Worked example'}</h2>
+    {guide ? <><p>{topic.explanation}</p><JavaExample topic={topic} /></> : <><pre><code>{topic.example}</code></pre><h3>How it works</h3><p>{topic.explanation}</p></>}
     <a className="plain-link space-top" href={track.reference} target="_blank" rel="noreferrer">{track.referenceLabel ?? `Official ${track.name} documentation`} <ExternalLink size={14} /></a>
   </section>;
   const practice = <section className="panel content-panel" key="practice"><h2>Practise this topic</h2><Practice topic={topic} /></section>;
   const rules = <section className="panel content-panel" key="rules"><h2>Rules & Tricks</h2><Rules topic={topic} /></section>;
+  const trace = guide && <AlgorithmTrace key="trace" steps={guide.trace}>
+    {topic.id === 'dsa-bounds' && <BinarySearchWalkthrough lowerBound />}
+  </AlgorithmTrace>;
+  const decisions = guide && <AlgorithmDecisions key="decisions" guide={guide} cues={topic.cues} />;
+  const reveal = <details key="answer" className="panel content-panel">
+    <summary>Reveal the worked example</summary>
+    <div className="space-top">
+      {guide ? <JavaExample topic={topic} /> : <pre><code>{topic.example}</code></pre>}
+      <p>{topic.explanation}</p>
+    </div>
+  </details>;
+  const dsaContent = format === 'practice'
+    ? [practice, reveal, trace, decisions]
+    : format === 'visual' ? [trace, example, decisions, practice] : [example, trace, decisions, practice];
   return <>
     <NavLink page="track" id={track.id} className="back-link"><ChevronLeft size={17} /> {track.name}</NavLink>
     <Heading title={topic.title} description={`${getModule(topic.moduleId).title} · Level ${topic.level} · ${topic.minutes} min`} badge={<Badge track={track} />} />
@@ -392,16 +419,16 @@ function Lesson({ topic, profile }) {
     </div>
     <div className="lesson-grid">
       <div className="stack">
-        {format === 'visual' && <section className="panel content-panel">
+        {!guide && format === 'visual' && <section className="panel content-panel">
           <h2>Walk through the decision</h2>
           <ol className="lesson-flow">
             <li><strong>Notice</strong><p>{topic.cues}</p></li>
             <li><strong>Apply</strong><p>{topic.rule}</p></li>
             <li><strong>Verify</strong><p>{topic.edges}</p></li>
           </ol>
-          {['java-search', 'js-binary', 'dsa-bounds'].includes(topic.id) && <BinarySearchWalkthrough lowerBound={topic.id === 'dsa-bounds'} />}
+          {['java-search', 'js-binary'].includes(topic.id) && <BinarySearchWalkthrough />}
         </section>}
-        {format === 'practice' ? [practice, <details key="answer" className="panel content-panel"><summary>Reveal the worked example</summary><div className="space-top"><pre><code>{topic.example}</code></pre><p>{topic.explanation}</p></div></details>, rules] : [example, ...(format === 'example' ? [rules] : []), practice]}
+        {guide ? dsaContent : format === 'practice' ? [practice, reveal, rules] : [example, ...(format === 'example' ? [rules] : []), practice]}
       </div>
       <aside className="panel content-panel lesson-side"><span className="soft-icon blue"><ClipboardCheck size={21} /></span><h2>Knowledge check</h2>
         {isReady ? <><p>{profile.passed[topic.id] ? 'You’ve passed this topic. You can take the check again at any time.' : 'Answer two questions to pass this topic and schedule your first Recall review.'}</p><a href={`#quiz/${topic.id}/check`} className="button primary">{profile.passed[topic.id] ? 'Retake check' : 'Start check'}</a></> : <><p>Pass the prerequisite check to unlock this topic’s assessment.</p><NavLink page="lesson" id={topic.prerequisite} className="plain-link">{getTopic(topic.prerequisite).title} <ChevronRight size={15} /></NavLink></>}
@@ -470,6 +497,9 @@ function Quiz({ subject, mode, profile, save }) {
   const questions = attemptQuestions(mode, subject);
   const title = module ? `${track.name} · ${module.title}` : mode === 'review' ? `Recall · ${topic.title}` : topic.title;
   const correct = questions.map(question => question[1]);
+  const nextDsaTopic = mode === 'check' && topic?.trackId === 'dsa' && result && result.score === result.total
+    ? getTrack('dsa').topics.find(item => item.level > topic.level && !profile.passed[item.id] && ready(item, profile))
+    : undefined;
 
   function submit(event) {
     event.preventDefault();
@@ -495,6 +525,7 @@ function Quiz({ subject, mode, profile, save }) {
       {result ? <div className="panel content-panel result" role="status">
         <h2>{result.score === result.total ? 'Passed' : 'Keep practising'} · {result.score}/{result.total}</h2>
         <p>{mode === 'review' ? 'Your next review date has been updated.' : result.score === result.total ? 'Your result is saved in your profile.' : 'Review the correct answers and return when you are ready.'}</p>
+        {nextDsaTopic && <NavLink page="lesson" id={nextDsaTopic.id} className="button primary">Next lesson <ChevronRight size={15} /></NavLink>}
         {topic && <NavLink page={mode === 'review' ? 'tests' : 'lesson'} id={mode === 'review' ? undefined : topic.id} className="button secondary">{mode === 'review' ? 'Back to Recall' : 'Review lesson'}</NavLink>}
         {track && <NavLink page="track" id={track.id} className="button secondary">Return to track</NavLink>}
       </div> : <div><button type="submit" className="button primary" disabled={Object.keys(answers).length !== questions.length}>Submit answers</button></div>}

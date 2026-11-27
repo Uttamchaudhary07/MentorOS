@@ -10,6 +10,8 @@ import { graphs } from './paths/dsa/graphs.js';
 import { optimization } from './paths/dsa/optimization.js';
 import { techniques } from './paths/dsa/advanced.js';
 import { specialized } from './paths/dsa/specialized.js';
+import { dsaGuide } from './paths/dsa/guide.js';
+import { dsaPrograms } from './paths/dsa/programs.js';
 
 const lesson = (id, title, minutes, explanation, example, cues, rule, edges, practice, questions) => ({
   id, title, minutes, explanation, example, cues, rule, edges, practice, questions,
@@ -412,6 +414,7 @@ export const tracks = paths.map(path => {
         level: ++level,
         prerequisite: module.topics[index - 1]?.id ?? moduleEntries[id],
         criteria: topic.criteria ?? [topic.edges, 'Write down the expected result for each case and compare it with your implementation.'],
+        ...(path.id === 'dsa' && { guide: dsaGuide[topic.id], javaProgram: dsaPrograms[topic.id] }),
       })),
     };
   });

@@ -112,3 +112,13 @@ test('Java and DSA have independent goals, durable old lessons, and broad curric
   assert.equal(learningPlan({ ...initialProfile, goal: 'dsa' }, 30)[0].topic.id, 'dsa-cost');
   assert.equal(learningPlan({ ...initialProfile, goal: 'java' }, 30)[0].topic.id, 'java-basics');
 });
+
+test('every DSA lesson teaches the algorithm and every module has runnable Java', () => {
+  for (const module of getTrack('dsa').modules) {
+    assert.ok(module.topics.some(topic => topic.javaProgram?.includes('public static void main')), module.id);
+    for (const { id, example, guide } of module.topics) {
+      assert.ok(example && guide?.invariant && guide.cost && guide.edge && guide.upgrade, id);
+      assert.ok(guide.trace.length >= 3 && guide.trace.every(Boolean), id);
+    }
+  }
+});
