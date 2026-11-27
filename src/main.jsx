@@ -377,8 +377,23 @@ function Lesson({ topic, profile }) {
   const track = getTrack(topic.trackId);
   const isReady = ready(topic, profile);
   const [format, setFormat] = useState(profile.format);
+  const walkthrough = topic.walkthrough;
+  const exampleCode = <>
+    {walkthrough && <p>Save the program as <code>{walkthrough.file}</code>.</p>}
+    <pre><code>{topic.example}</code></pre>
+    {walkthrough && <>
+      <h3>Step by step</h3>
+      <ol>
+        {walkthrough.steps.map(([title, description]) => <li key={title}><strong>{title}</strong><p>{description}</p></li>)}
+      </ol>
+      <h3>Compile and run</h3>
+      <pre><code>{walkthrough.commands}</code></pre>
+      <h3>Expected output</h3>
+      <pre><code>{walkthrough.output}</code></pre>
+    </>}
+  </>;
   const example = <section className="panel content-panel" key="example">
-    <h2>Worked example</h2><pre><code>{topic.example}</code></pre>
+    <h2>Worked example</h2>{exampleCode}
     <h3>How it works</h3><p>{topic.explanation}</p>
     <a className="plain-link space-top" href={track.reference} target="_blank" rel="noreferrer">{track.referenceLabel ?? `Official ${track.name} documentation`} <ExternalLink size={14} /></a>
   </section>;
@@ -401,7 +416,7 @@ function Lesson({ topic, profile }) {
           </ol>
           {['java-search', 'js-binary', 'dsa-bounds'].includes(topic.id) && <BinarySearchWalkthrough lowerBound={topic.id === 'dsa-bounds'} />}
         </section>}
-        {format === 'practice' ? [practice, <details key="answer" className="panel content-panel"><summary>Reveal the worked example</summary><div className="space-top"><pre><code>{topic.example}</code></pre><p>{topic.explanation}</p></div></details>, rules] : [example, ...(format === 'example' ? [rules] : []), practice]}
+        {format === 'practice' ? [practice, <details key="answer" className="panel content-panel"><summary>Reveal the worked example</summary><div className="space-top">{exampleCode}<p>{topic.explanation}</p></div></details>, rules] : [example, ...(format === 'example' ? [rules] : []), practice]}
       </div>
       <aside className="panel content-panel lesson-side"><span className="soft-icon blue"><ClipboardCheck size={21} /></span><h2>Knowledge check</h2>
         {isReady ? <><p>{profile.passed[topic.id] ? 'You’ve passed this topic. You can take the check again at any time.' : 'Answer two questions to pass this topic and schedule your first Recall review.'}</p><a href={`#quiz/${topic.id}/check`} className="button primary">{profile.passed[topic.id] ? 'Retake check' : 'Start check'}</a></> : <><p>Pass the prerequisite check to unlock this topic’s assessment.</p><NavLink page="lesson" id={topic.prerequisite} className="plain-link">{getTopic(topic.prerequisite).title} <ChevronRight size={15} /></NavLink></>}

@@ -10,14 +10,42 @@ export const java = [
       'Test zero arguments, overloaded numeric types, and an explicitly null argument.',
       'Write two methods that demonstrate the difference between object mutation and local reassignment.', ['The mutation is visible to the caller.', 'Reassignment changes only the local parameter.'],
       [['What distinguishes two overloads?', 'Their parameter lists', 'Their return types alone', 'Their comments'], ['What does Java pass for an object parameter?', 'A copy of the reference value', 'A deep copy of the object', 'A shared caller variable'], ['A method reassigns a reference parameter. What changes for the caller?', 'The caller reference still points to its original object', 'The caller reference must point to the new object', 'The original object is always destroyed'], ['What can be observed by a caller holding the same object?', 'Mutation of that object', 'Every reassignment to a local parameter', 'Only the method name']]),
-    unit('java-strings', 'Strings, text builders, and equality',
+    { ...unit('java-strings', 'Strings, text builders, and equality',
       'String values are immutable. Compare content with equals and use a StringBuilder for repeated appends. Double equals on references checks identity, which can appear to work for string literals and fail for user input.',
-      'StringBuilder summary = new StringBuilder();\nfor (String item : items) summary.append(item).append("\\n");\nString result = summary.toString();',
+      `public class Main {
+    public static void main(String[] args) {
+        String[] items = {"Set up Java", "Practise loops", "Review arrays"};
+        StringBuilder summary = new StringBuilder();
+
+        for (String item : items) {
+            summary.append(item).append('\\n');
+        }
+
+        String result = summary.toString();
+        System.out.print(result);
+
+        String expected = "Set up Java\\nPractise loops\\nReview arrays\\n";
+        System.out.println("Matches expected: " + expected.equals(result));
+    }
+}`,
       'If two things print the same but compare unequal, check whether you are comparing identity.',
       'Use equals for text content. Use a builder for repeated appends.',
       'Try empty text, a null reference, and characters outside the basic multilingual plane.',
       'Generate a multiline summary and test content equality with strings from different sources.', ['Equivalent text compares equal.', 'Repeated appends use one builder.'],
       [['Which method compares String content?', 'equals', '== on references', 'compareIdentity'], ['Can a String be modified in place?', 'No', 'Yes', 'Only a literal'], ['A report adds thousands of lines one at a time. What fits?', 'StringBuilder', 'Changing an interned string directly', 'Creating a pattern per line'], ['What does == compare for reference operands?', 'Object identity', 'Always content', 'Text length']]),
+      walkthrough: {
+        file: 'Main.java',
+        steps: [
+          ['Start the program', 'Java runs main first. The items array supplies three sample lines in the order we want them printed.'],
+          ['Create an empty builder', 'new StringBuilder() creates one object that holds text we can change. At this point it contains no characters.'],
+          ['Append one line per iteration', 'The loop visits each item once. On the first pass, append(item) adds “Set up Java” and the second append adds a newline. The next pass keeps that content and adds “Practise loops” on the following line. The third pass adds “Review arrays”.'],
+          ['Turn the finished text into a String', 'toString() takes a snapshot of the builder’s current text and returns a String. System.out.print(result) displays that text. Each item already ends with a newline.'],
+          ['Check the result', 'expected is a separate String containing the three lines we want. equals(result) compares the characters, including newlines, and prints true when they match.'],
+        ],
+        commands: 'javac Main.java\njava Main',
+        output: 'Set up Java\nPractise loops\nReview arrays\nMatches expected: true',
+      },
+    },
     unit('java-classes', 'Classes, constructors, and encapsulation',
       'Constructors establish a valid state. Keep fields private where callers should not change them independently. Expose meaningful operations on a class instead of making every internal value publicly settable.',
       'final class Score {\n  private final int points;\n  Score(int points) {\n    if (points < 0) throw new IllegalArgumentException("Negative score");\n    this.points = points;\n  }\n  int points() { return points; }\n}',
