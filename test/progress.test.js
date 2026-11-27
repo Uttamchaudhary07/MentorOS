@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { tracks, topics, getTrack } from '../src/curriculum.js';
+import { tracks, topics, getTrack, getTopic, getAssessmentModule } from '../src/curriculum.js';
 import { DAY, initialProfile, ready, recordAttempt, modulePassed } from '../src/progress.js';
 import { learningPlan } from '../src/learning-plan.js';
 
@@ -11,8 +11,8 @@ test('all eight tracks have lessons, checked exercises, and valid module prerequ
   for (const track of tracks) {
     assert.ok(track.modules.length >= 3);
     assert.ok(track.topics.length >= 10);
-    assert.equal(track.modules[0].mode, 'mixed');
-    if (track.id !== 'dsa') assert.equal(track.modules[0].topics.length, 3);
+    assert.equal(track.modules[0].mode, track.id === 'java' ? 'module' : 'mixed');
+    if (!['dsa', 'java'].includes(track.id)) assert.equal(track.modules[0].topics.length, 3);
     for (const module of track.modules) {
       for (const [index, topic] of module.topics.entries()) {
         if (index > 0) assert.equal(topic.prerequisite, module.topics[index - 1]?.id);
@@ -97,7 +97,7 @@ test('the plan recommends revisiting a missed skill and taking ready checkpoints
   const passed = { ...profile, passed: Object.fromEntries(module.topics.map(topic => [topic.id, 100])) };
   assert.equal(learningPlan(passed, 101)[0].kind, 'test');
   const checkpoint = module.topics.map(topic => topic.questions[2][1]);
-  const failedCheckpoint = recordAttempt(passed, 'mixed', module.subject, ['wrong', ...checkpoint.slice(1)], checkpoint, 102);
+  const failedCheckpoint = recordAttempt(passed, module.mode, module.subject, ['wrong', ...checkpoint.slice(1)], checkpoint, 102);
   assert.equal(learningPlan(failedCheckpoint, 103)[0].kind, 'checkpoint');
   assert.equal(learningPlan(failedCheckpoint, 103)[0].href, `#lesson/${first.id}`);
 });
@@ -107,8 +107,35 @@ test('Java and DSA have independent goals, durable old lessons, and broad curric
   const dsa = getTrack('dsa');
   assert.ok(java.topics.length >= 60);
   assert.ok(dsa.topics.length >= 45);
-  assert.deepEqual(java.modules[0].topics.map(topic => topic.id), ['java-basics', 'java-arrays', 'java-search']);
+  assert.equal(java.topics.length, 65);
   assert.ok(dsa.topics.filter(topic => topic.practice.some(link => Array.isArray(link) && link[0].startsWith('LeetCode #'))).length >= 30);
   assert.equal(learningPlan({ ...initialProfile, goal: 'dsa' }, 30)[0].topic.id, 'dsa-cost');
-  assert.equal(learningPlan({ ...initialProfile, goal: 'java' }, 30)[0].topic.id, 'java-basics');
+  assert.equal(learningPlan({ ...initialProfile, goal: 'java' }, 30)[0].topic.id, 'java-setup');
+});
+
+test('Java prerequisites follow the teaching sequence from setup to binary search', () => {
+  const track = getTrack('java');
+  const early = ['java-setup', 'java-primitives', 'java-operators', 'java-branching', 'java-basics', 'java-strings', 'java-methods', 'java-arrays', 'java-matrices'];
+  assert.deepEqual(track.topics.slice(0, early.length).map(topic => topic.id), early);
+
+  const search = getTopic('java-search');
+  const sort = getTopic('java-sort');
+  const complexity = getTopic('java-complexity');
+  assert.equal(search.moduleId, 'java-algorithm-practice');
+  assert.equal(search.prerequisite, sort.id);
+  assert.equal(sort.prerequisite, complexity.id);
+  assert.equal(complexity.prerequisite, 'java-matrices');
+  assert.equal(ready(search, initialProfile), false);
+});
+
+test('legacy Java checkpoint questions and previously passed lessons remain accessible', () => {
+  const essentials = getAssessmentModule('mixed', 'java');
+  assert.deepEqual(essentials.topics.map(topic => topic.id), ['java-basics', 'java-arrays', 'java-search']);
+  const fundamentals = getAssessmentModule('module', 'java-fundamentals');
+  assert.deepEqual(fundamentals.topics.map(topic => topic.id), ['java-setup', 'java-primitives', 'java-operators', 'java-branching', 'java-matrices', 'java-boxing']);
+
+  const previous = { ...initialProfile, goal: 'java', passed: { 'java-search': 100 } };
+  assert.ok(ready(getTopic('java-search'), previous));
+  const failed = { ...initialProfile, goal: 'java', attempts: [{ mode: 'check', subject: 'java-search', answers: ['wrong'], score: 0, total: 2, at: 100 }] };
+  assert.equal(learningPlan(failed, 101)[0].topic.id, 'java-setup');
 });

@@ -2,7 +2,7 @@ export const DAY = 86_400_000;
 export const initialProfile = { name: '', goal: '', format: 'example', started: {}, passed: {}, reviews: {}, attempts: [] };
 
 export function ready(topic, profile) {
-  return !topic.prerequisite || Boolean(profile.passed[topic.prerequisite]);
+  return !topic.prerequisite || Boolean(profile.passed[topic.id] || profile.passed[topic.prerequisite]);
 }
 
 export function recordAttempt(profile, mode, subject, answers, correct, now = Date.now()) {

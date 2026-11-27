@@ -1,10 +1,10 @@
 # LearnOS
 
-A browser-based learning workspace for HTML, CSS, JavaScript, React, Node.js, Express, Java, and DSA with Java. The eight tracks span 207 original topics in 44 modules, from foundations through applied and advanced concepts. Each topic includes a worked example, recognition cues, edge cases, and an original practice task with specific checks. Selected lessons link to matching LeetCode or publisher exercises.
+A browser-based learning workspace for HTML, CSS, JavaScript, React, Node.js, Express, Java, and DSA with Java. The eight tracks span 207 original topics in 45 modules, from foundations through applied and advanced concepts. Each topic includes a worked example, recognition cues, edge cases, and an original practice task with specific checks. Selected lessons link to matching LeetCode or publisher exercises.
 
 ## Java curriculum
 
-- **Java** includes 65 lessons across syntax, the type system, object design, generics, the standard library, concurrency, JVM tooling, testing, packaging, data access, and projects.
+- **Java** includes 65 lessons. Start with setup, primitive types, operators, and loops, then learn strings, methods, and arrays. The later modules cover object design, generics, collections, I/O, concurrency, JVM tooling, and projects. Binary search appears in algorithm practice after complexity and sorting.
 - **DSA with Java** includes 55 lessons across complexity, arrays and hashing, searching and sorting, linear structures, trees and heaps, graphs, greedy and backtracking, dynamic programming, text algorithms, range queries, and advanced patterns.
 
 Choose either course as a goal in My Learning Plan. For complete API and specification references, see [Dev.java](https://dev.java/learn/), the [Java SE API](https://docs.oracle.com/en/java/javase/25/docs/api/index.html), and the [NIST algorithms dictionary](https://xlinux.nist.gov/dads/).

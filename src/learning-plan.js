@@ -11,7 +11,7 @@ export function learningPlan(profile, now = Date.now()) {
   const goal = getTrack(profile.goal);
   const pool = goal?.topics ?? topics;
   const selectedModules = (goal ? [goal] : tracks).flatMap(track => track.modules);
-  const inPool = new Set(pool.map(topic => topic.id));
+  const byId = new Map(pool.map(topic => [topic.id, topic]));
   const actions = [];
   const due = pool
     .filter(topic => profile.reviews[topic.id]?.due <= now)
@@ -26,15 +26,16 @@ export function learningPlan(profile, now = Date.now()) {
 
   const latestByTopic = new Map();
   for (const attempt of profile.attempts) {
-    if (attempt.mode === 'check' && inPool.has(attempt.subject) && !latestByTopic.has(attempt.subject)) {
+    if (attempt.mode === 'check' && byId.has(attempt.subject) && !latestByTopic.has(attempt.subject)) {
       latestByTopic.set(attempt.subject, attempt);
     }
   }
   const failed = Array.from(latestByTopic.values()).find(attempt =>
-    attempt.score < attempt.total && attempt.at >= now - 14 * DAY && !profile.passed[attempt.subject]
+    attempt.score < attempt.total && attempt.at >= now - 14 * DAY &&
+    !profile.passed[attempt.subject] && ready(byId.get(attempt.subject), profile)
   );
   if (failed) {
-    const topic = pool.find(item => item.id === failed.subject);
+    const topic = byId.get(failed.subject);
     const missed = topic.questions.slice(0, 2).find((question, index) => question[1] !== failed.answers[index]);
     actions.push({
       kind: 'revisit', topic, href: `#lesson/${topic.id}`, title: topic.title,
@@ -69,7 +70,7 @@ export function learningPlan(profile, now = Date.now()) {
       kind: 'learn', topic: next, href: `#lesson/${next.id}`, title: next.title,
       label: profile.started[next.id] ? 'Resume lesson' : 'Start lesson',
       reason: next.prerequisite
-        ? `You passed ${pool.find(item => item.id === next.prerequisite)?.title ?? 'the prerequisite check'} and unlocked this assessment.`
+        ? `You passed ${byId.get(next.prerequisite)?.title ?? 'the prerequisite check'} and unlocked this assessment.`
         : goal ? `This topic is ready to start in your ${goal.name} goal.` : 'This lesson is ready to start. Choose a goal to prioritize another track.',
     });
   }

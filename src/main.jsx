@@ -5,7 +5,7 @@ import {
   ClipboardCheck, Code2, ExternalLink, FlaskConical, GraduationCap, House, Layers3,
   Lightbulb, LockKeyhole, Menu, Search, Target, Compass, UserRound, X, RotateCcw,
 } from 'lucide-react';
-import { tracks, topics, getTrack, getTopic, getModule } from './curriculum.js';
+import { tracks, topics, getTrack, getTopic, getModule, getAssessmentModule } from './curriculum.js';
 import { initialProfile, ready, recordAttempt, modulePassed } from './progress.js';
 import { learningPlan, formats } from './learning-plan.js';
 import { exercises, evaluateExercise } from './code-lab.js';
@@ -434,24 +434,19 @@ function Tests({ profile, pending }) {
     <section className="panel content-panel stack-section"><h2>Attempt history</h2>
       {!histories.length && <p>Your LearnOS test and review results will appear here.</p>}
       {histories.map((attempt, index) => {
-        const item = getTopic(attempt.subject) ?? getTrack(attempt.subject) ?? getModule(attempt.subject);
+        const assessment = getAssessmentModule(attempt.mode, attempt.subject);
+        const title = assessment
+          ? `${getTrack(assessment.trackId).name} · ${assessment.title}`
+          : getTopic(attempt.subject)?.title;
         const label = ['mixed', 'module'].includes(attempt.mode) ? 'Mixed test' : attempt.mode === 'review' ? 'Recall' : attempt.mode === 'code' ? 'Coding exercise' : 'Topic check';
-        return item && <details className="history-item" key={`${attempt.at}-${index}`}><summary>{item.title ?? item.name} · {label}<span>{attempt.score}/{attempt.total} · {new Date(attempt.at).toLocaleDateString()}</span></summary><div className="history-body">{(attempt.mode === 'code' ? (exercises[attempt.subject]?.cases ?? []).map(item => [item.label, true]) : attemptQuestions(attempt.mode, attempt.subject)).map((question, qIndex) => <p key={question[0]}><strong>{question[0]}</strong><br />{attempt.answers[qIndex] === question[1] ? 'Correct' : attempt.mode === 'code' ? 'Case failed' : `Your answer: ${attempt.answers[qIndex]}. Correct answer: ${question[1]}.`}</p>)}</div></details>;
+        return title && <details className="history-item" key={`${attempt.at}-${index}`}><summary>{title} · {label}<span>{attempt.score}/{attempt.total} · {new Date(attempt.at).toLocaleDateString()}</span></summary><div className="history-body">{(attempt.mode === 'code' ? (exercises[attempt.subject]?.cases ?? []).map(item => [item.label, true]) : attemptQuestions(attempt.mode, attempt.subject)).map((question, qIndex) => <p key={question[0]}><strong>{question[0]}</strong><br />{attempt.answers[qIndex] === question[1] ? 'Correct' : attempt.mode === 'code' ? 'Case failed' : `Your answer: ${attempt.answers[qIndex]}. Correct answer: ${question[1]}.`}</p>)}</div></details>;
       })}
     </section>
   </>;
 }
 
-function assessmentModule(mode, subject) {
-  if (mode === 'mixed') return getTrack(subject)?.modules[0];
-  if (mode === 'module') {
-    const module = getModule(subject);
-    return module?.mode === 'module' ? module : undefined;
-  }
-}
-
 function attemptQuestions(mode, subject) {
-  const module = assessmentModule(mode, subject);
+  const module = getAssessmentModule(mode, subject);
   if (module) return module.topics.map(item => item.questions[2]);
   const topic = getTopic(subject);
   return mode === 'review' ? topic?.questions.slice(3, 4) ?? [] : topic?.questions.slice(0, 2) ?? [];
@@ -460,7 +455,7 @@ function attemptQuestions(mode, subject) {
 function Quiz({ subject, mode, profile, save }) {
   const [answers, setAnswers] = useState({});
   const [result, setResult] = useState(null);
-  const module = assessmentModule(mode, subject);
+  const module = getAssessmentModule(mode, subject);
   const topic = module ? undefined : getTopic(subject);
   const track = module ? getTrack(module.trackId) : undefined;
   const available = module

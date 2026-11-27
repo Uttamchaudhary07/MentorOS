@@ -4,6 +4,7 @@ import { node, express } from './paths/backend.js';
 import { advanced } from './paths/advanced.js';
 import { java } from './paths/java.js';
 import { javaCore } from './paths/java-core.js';
+import { javaSequence } from './paths/java-sequence.js';
 import { foundations } from './paths/dsa/foundations.js';
 import { structures } from './paths/dsa/structures.js';
 import { graphs } from './paths/dsa/graphs.js';
@@ -290,8 +291,8 @@ const paths = [
     id: 'java', name: 'Java', label: 'Language, standard library & JVM', mark: 'J', color: 'rose',
     reference: 'https://dev.java/learn/',
     topics: [
-      lesson('java-basics', 'Types and control flow', 16,
-        'Java variables have declared types. Comparisons drive branching and loops. Choose a type based on the range and meaning of a value, and remember that integer division truncates toward zero.',
+      lesson('java-basics', 'Practice: apply types and control flow', 16,
+        'Bring primitive types, comparisons, branches, and loops together in one calculation. Start by choosing the variable types, then trace the comparison and result for each branch. Remember that integer division truncates toward zero, so convert an operand before dividing when you need a fractional result.',
         'static double average(int a, int b) {\n    return ((double) a + b) / 2;\n}',
         'If a result needs fractions, check whether the calculation uses integer operands.',
         'Cast before division so the division itself uses floating point.',
@@ -340,17 +341,16 @@ const paths = [
   },
 ];
 
-const [javaLanguage, javaLibraries, javaPatterns] = java;
-const [javaFundamentals, javaObjectDesign, javaStandardApi, javaConcurrency, javaPlatform, javaApplications] = javaCore;
+const originalJavaModules = [
+  { id: 'essentials', title: 'Essentials', topics: paths.find(path => path.id === 'java').topics },
+  ...java, ...javaCore, ...advanced.java,
+];
+const javaLessons = new Map(originalJavaModules.flatMap(module => module.topics).map(topic => [topic.id, topic]));
 
 const expandedPaths = {
   html, css, node, express,
   javascript: [...javascript, ...advanced.javascript],
   react: [...react, ...advanced.react],
-  java: [
-    javaFundamentals, javaLanguage, javaObjectDesign, javaLibraries, javaStandardApi,
-    javaConcurrency, javaPlatform, javaApplications, javaPatterns, ...advanced.java,
-  ],
   dsa: [...foundations.slice(1), ...structures, ...graphs, ...optimization, ...techniques, ...specialized],
 };
 const moduleEntries = {
@@ -370,16 +370,6 @@ const moduleEntries = {
   'node-production': 'node-streams',
   'express-services': 'express-api',
   'express-shipping': 'express-persistence',
-  'java-language': 'java-basics',
-  'java-libraries': 'java-generics',
-  'java-patterns': 'java-collections',
-  'java-advanced': 'java-complexity',
-  'java-fundamentals': 'java-basics',
-  'java-object-design': 'java-oop',
-  'java-standard-api': 'java-collections',
-  'java-parallel-java': 'java-concurrency',
-  'java-platform': 'java-tools',
-  'java-applications': 'java-io',
   'dsa-sorting': 'dsa-arrays',
   'dsa-linear': 'dsa-frequencies',
   'dsa-trees': 'dsa-stack-queue',
@@ -394,23 +384,27 @@ const moduleEntries = {
 
 export const tracks = paths.map(path => {
   let level = 0;
-  const modules = [
-    { id: 'essentials', title: path.essentialsTitle ?? 'Essentials', topics: path.topics },
-    ...expandedPaths[path.id],
-  ].map((module, moduleIndex) => {
+  const sequence = path.id === 'java'
+    ? javaSequence.map(module => ({ ...module, topics: module.topics.map(id => javaLessons.get(id)) }))
+    : [
+      { id: 'essentials', title: path.essentialsTitle ?? 'Essentials', topics: path.topics },
+      ...expandedPaths[path.id],
+    ];
+  const modules = sequence.map((module, moduleIndex) => {
     const id = `${path.id}-${module.id}`;
+    const mixed = path.id !== 'java' && moduleIndex === 0;
     return {
       ...module,
       id,
       trackId: path.id,
-      mode: moduleIndex === 0 ? 'mixed' : 'module',
-      subject: moduleIndex === 0 ? path.id : id,
+      mode: mixed ? 'mixed' : 'module',
+      subject: mixed ? path.id : id,
       topics: module.topics.map((topic, index) => ({
         ...topic,
         trackId: path.id,
         moduleId: id,
         level: ++level,
-        prerequisite: module.topics[index - 1]?.id ?? moduleEntries[id],
+        prerequisite: module.topics[index - 1]?.id ?? module.prerequisite ?? moduleEntries[id],
         criteria: topic.criteria ?? [topic.edges, 'Write down the expected result for each case and compare it with your implementation.'],
       })),
     };
@@ -423,3 +417,18 @@ export const modules = tracks.flatMap(track => track.modules);
 export const getTrack = id => tracks.find(track => track.id === id);
 export const getTopic = id => topics.find(topic => topic.id === id);
 export const getModule = id => modules.find(module => module.id === id);
+
+// Earlier Java attempts stored answers by position, so their original question order is still used.
+const originalJavaAssessments = originalJavaModules.map((module, index) => ({
+  ...module,
+  trackId: 'java',
+  mode: index === 0 ? 'mixed' : 'module',
+  subject: index === 0 ? 'java' : `java-${module.id}`,
+}));
+
+export function getAssessmentModule(mode, subject) {
+  if (mode === 'mixed' || mode === 'module') {
+    return modules.find(module => module.mode === mode && module.subject === subject)
+      ?? originalJavaAssessments.find(module => module.mode === mode && module.subject === subject);
+  }
+}
