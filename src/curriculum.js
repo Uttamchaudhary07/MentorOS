@@ -3,6 +3,13 @@ import { javascript, react } from './paths/javascript-react.js';
 import { node, express } from './paths/backend.js';
 import { advanced } from './paths/advanced.js';
 import { java } from './paths/java.js';
+import { javaCore } from './paths/java-core.js';
+import { foundations } from './paths/dsa/foundations.js';
+import { structures } from './paths/dsa/structures.js';
+import { graphs } from './paths/dsa/graphs.js';
+import { optimization } from './paths/dsa/optimization.js';
+import { techniques } from './paths/dsa/advanced.js';
+import { specialized } from './paths/dsa/specialized.js';
 
 const lesson = (id, title, minutes, explanation, example, cues, rule, edges, practice, questions) => ({
   id, title, minutes, explanation, example, cues, rule, edges, practice, questions,
@@ -280,7 +287,7 @@ const paths = [
     ],
   },
   {
-    id: 'java', name: 'Java', label: 'Foundations & algorithms', mark: 'J', color: 'rose',
+    id: 'java', name: 'Java', label: 'Language, standard library & JVM', mark: 'J', color: 'rose',
     reference: 'https://dev.java/learn/',
     topics: [
       lesson('java-basics', 'Types and control flow', 16,
@@ -324,9 +331,28 @@ const paths = [
         ]),
     ],
   },
+  {
+    id: 'dsa', name: 'DSA with Java', label: 'Data structures, algorithms & problem solving', mark: 'DSA', color: 'violet',
+    reference: 'https://xlinux.nist.gov/dads/',
+    referenceLabel: 'NIST algorithm and data structure reference',
+    essentialsTitle: foundations[0].title,
+    topics: foundations[0].topics,
+  },
 ];
 
-const expandedPaths = { html, css, javascript, react, node, express, java };
+const [javaLanguage, javaLibraries, javaPatterns] = java;
+const [javaFundamentals, javaObjectDesign, javaStandardApi, javaConcurrency, javaPlatform, javaApplications] = javaCore;
+
+const expandedPaths = {
+  html, css, node, express,
+  javascript: [...javascript, ...advanced.javascript],
+  react: [...react, ...advanced.react],
+  java: [
+    javaFundamentals, javaLanguage, javaObjectDesign, javaLibraries, javaStandardApi,
+    javaConcurrency, javaPlatform, javaApplications, javaPatterns, ...advanced.java,
+  ],
+  dsa: [...foundations.slice(1), ...structures, ...graphs, ...optimization, ...techniques, ...specialized],
+};
 const moduleEntries = {
   'html-documents': 'html-structure',
   'html-interactive': 'html-tables',
@@ -348,14 +374,29 @@ const moduleEntries = {
   'java-libraries': 'java-generics',
   'java-patterns': 'java-collections',
   'java-advanced': 'java-complexity',
+  'java-fundamentals': 'java-basics',
+  'java-object-design': 'java-oop',
+  'java-standard-api': 'java-collections',
+  'java-parallel-java': 'java-concurrency',
+  'java-platform': 'java-tools',
+  'java-applications': 'java-io',
+  'dsa-sorting': 'dsa-arrays',
+  'dsa-linear': 'dsa-frequencies',
+  'dsa-trees': 'dsa-stack-queue',
+  'dsa-graphs': 'dsa-traversals',
+  'dsa-weighted': 'dsa-directed',
+  'dsa-greedy-search': 'dsa-sorting',
+  'dsa-dp': 'dsa-recursive-split',
+  'dsa-strings': 'dsa-prefix-difference',
+  'dsa-range-math': 'dsa-prefix-difference',
+  'dsa-advanced-patterns': 'dsa-bounds',
 };
 
 export const tracks = paths.map(path => {
   let level = 0;
   const modules = [
-    { id: 'essentials', title: 'Essentials', topics: path.topics },
+    { id: 'essentials', title: path.essentialsTitle ?? 'Essentials', topics: path.topics },
     ...expandedPaths[path.id],
-    ...(advanced[path.id] ?? []),
   ].map((module, moduleIndex) => {
     const id = `${path.id}-${module.id}`;
     return {

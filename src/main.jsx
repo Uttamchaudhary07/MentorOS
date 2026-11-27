@@ -380,7 +380,7 @@ function Lesson({ topic, profile }) {
   const example = <section className="panel content-panel" key="example">
     <h2>Worked example</h2><pre><code>{topic.example}</code></pre>
     <h3>How it works</h3><p>{topic.explanation}</p>
-    <a className="plain-link space-top" href={track.reference} target="_blank" rel="noreferrer">Official {track.name} documentation <ExternalLink size={14} /></a>
+    <a className="plain-link space-top" href={track.reference} target="_blank" rel="noreferrer">{track.referenceLabel ?? `Official ${track.name} documentation`} <ExternalLink size={14} /></a>
   </section>;
   const practice = <section className="panel content-panel" key="practice"><h2>Practise this topic</h2><Practice topic={topic} /></section>;
   const rules = <section className="panel content-panel" key="rules"><h2>Rules & Tricks</h2><Rules topic={topic} /></section>;
@@ -399,7 +399,7 @@ function Lesson({ topic, profile }) {
             <li><strong>Apply</strong><p>{topic.rule}</p></li>
             <li><strong>Verify</strong><p>{topic.edges}</p></li>
           </ol>
-          {['java-search', 'js-binary'].includes(topic.id) && <BinarySearchWalkthrough />}
+          {['java-search', 'js-binary', 'dsa-bounds'].includes(topic.id) && <BinarySearchWalkthrough lowerBound={topic.id === 'dsa-bounds'} />}
         </section>}
         {format === 'practice' ? [practice, <details key="answer" className="panel content-panel"><summary>Reveal the worked example</summary><div className="space-top"><pre><code>{topic.example}</code></pre><p>{topic.explanation}</p></div></details>, rules] : [example, ...(format === 'example' ? [rules] : []), practice]}
       </div>

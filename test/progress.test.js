@@ -4,15 +4,15 @@ import { tracks, topics, getTrack } from '../src/curriculum.js';
 import { DAY, initialProfile, ready, recordAttempt, modulePassed } from '../src/progress.js';
 import { learningPlan } from '../src/learning-plan.js';
 
-test('all seven expanded tracks have lessons, checked exercises, and valid module prerequisites', () => {
-  assert.equal(tracks.length, 7);
+test('all eight tracks have lessons, checked exercises, and valid module prerequisites', () => {
+  assert.equal(tracks.length, 8);
   assert.equal(new Set(topics.map(topic => topic.id)).size, topics.length);
   assert.ok(topics.length > 100);
   for (const track of tracks) {
     assert.ok(track.modules.length >= 3);
     assert.ok(track.topics.length >= 10);
     assert.equal(track.modules[0].mode, 'mixed');
-    assert.equal(track.modules[0].topics.length, 3);
+    if (track.id !== 'dsa') assert.equal(track.modules[0].topics.length, 3);
     for (const module of track.modules) {
       for (const [index, topic] of module.topics.entries()) {
         if (index > 0) assert.equal(topic.prerequisite, module.topics[index - 1]?.id);
@@ -100,4 +100,15 @@ test('the plan recommends revisiting a missed skill and taking ready checkpoints
   const failedCheckpoint = recordAttempt(passed, 'mixed', module.subject, ['wrong', ...checkpoint.slice(1)], checkpoint, 102);
   assert.equal(learningPlan(failedCheckpoint, 103)[0].kind, 'checkpoint');
   assert.equal(learningPlan(failedCheckpoint, 103)[0].href, `#lesson/${first.id}`);
+});
+
+test('Java and DSA have independent goals, durable old lessons, and broad curriculum coverage', () => {
+  const java = getTrack('java');
+  const dsa = getTrack('dsa');
+  assert.ok(java.topics.length >= 60);
+  assert.ok(dsa.topics.length >= 45);
+  assert.deepEqual(java.modules[0].topics.map(topic => topic.id), ['java-basics', 'java-arrays', 'java-search']);
+  assert.ok(dsa.topics.filter(topic => topic.practice.some(link => Array.isArray(link) && link[0].startsWith('LeetCode #'))).length >= 30);
+  assert.equal(learningPlan({ ...initialProfile, goal: 'dsa' }, 30)[0].topic.id, 'dsa-cost');
+  assert.equal(learningPlan({ ...initialProfile, goal: 'java' }, 30)[0].topic.id, 'java-basics');
 });
