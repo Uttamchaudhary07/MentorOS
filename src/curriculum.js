@@ -1,3 +1,9 @@
+import { html, css } from './paths/html-css.js';
+import { javascript, react } from './paths/javascript-react.js';
+import { node, express } from './paths/backend.js';
+import { advanced } from './paths/advanced.js';
+import { java } from './paths/java.js';
+
 const lesson = (id, title, minutes, explanation, example, cues, rule, edges, practice, questions) => ({
   id, title, minutes, explanation, example, cues, rule, edges, practice, questions,
 });
@@ -320,30 +326,59 @@ const paths = [
   },
 ];
 
-const codePen = ['CodePen', 'Open the HTML, CSS, and JavaScript editor', 'https://codepen.io/pen/'];
-const nodeEditor = ['StackBlitz', 'Open the Node.js starter', 'https://stackblitz.com/edit/node'];
-const reactExercises = {
-  'react-components': ['React Learn', 'Component exercises', 'https://react.dev/learn/your-first-component#challenges'],
-  'react-state': ['React Learn', 'State exercises', 'https://react.dev/learn/state-a-components-memory#challenges'],
-  'react-lists': ['React Learn', 'List and key exercises', 'https://react.dev/learn/rendering-lists#challenges'],
+const expandedPaths = { html, css, javascript, react, node, express, java };
+const moduleEntries = {
+  'html-documents': 'html-structure',
+  'html-interactive': 'html-tables',
+  'css-styling': 'css-cascade',
+  'css-layouts': 'css-responsive',
+  'css-systems': 'css-motion',
+  'javascript-language': 'js-basics',
+  'javascript-browser': 'js-async',
+  'javascript-patterns': 'js-arrays',
+  'javascript-advanced': 'js-data',
+  'react-composition': 'react-state',
+  'react-integration': 'react-reducer',
+  'react-advanced': 'react-fetch',
+  'node-tooling': 'node-runtime',
+  'node-production': 'node-streams',
+  'express-services': 'express-api',
+  'express-shipping': 'express-persistence',
+  'java-language': 'java-basics',
+  'java-libraries': 'java-generics',
+  'java-patterns': 'java-collections',
+  'java-advanced': 'java-complexity',
 };
 
-function externalPractice(topic, track) {
-  if (topic.practice.length > 1) return topic.practice;
-  const exercise = reactExercises[topic.id] ?? (track === 'node' || track === 'express' ? nodeEditor : codePen);
-  return [...topic.practice, exercise];
-}
+export const tracks = paths.map(path => {
+  let level = 0;
+  const modules = [
+    { id: 'essentials', title: 'Essentials', topics: path.topics },
+    ...expandedPaths[path.id],
+    ...(advanced[path.id] ?? []),
+  ].map((module, moduleIndex) => {
+    const id = `${path.id}-${module.id}`;
+    return {
+      ...module,
+      id,
+      trackId: path.id,
+      mode: moduleIndex === 0 ? 'mixed' : 'module',
+      subject: moduleIndex === 0 ? path.id : id,
+      topics: module.topics.map((topic, index) => ({
+        ...topic,
+        trackId: path.id,
+        moduleId: id,
+        level: ++level,
+        prerequisite: module.topics[index - 1]?.id ?? moduleEntries[id],
+        criteria: topic.criteria ?? [topic.edges, 'Write down the expected result for each case and compare it with your implementation.'],
+      })),
+    };
+  });
+  return { ...path, modules, topics: modules.flatMap(module => module.topics) };
+});
 
-export const tracks = paths.map(path => ({
-  ...path,
-  topics: path.topics.map((topic, index) => ({
-    ...topic,
-    trackId: path.id,
-    practice: externalPractice(topic, path.id),
-    level: index + 1,
-    prerequisite: path.topics[index - 1]?.id,
-  })),
-}));
 export const topics = tracks.flatMap(track => track.topics);
+export const modules = tracks.flatMap(track => track.modules);
 export const getTrack = id => tracks.find(track => track.id === id);
 export const getTopic = id => topics.find(topic => topic.id === id);
+export const getModule = id => modules.find(module => module.id === id);

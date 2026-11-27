@@ -1,5 +1,5 @@
 export const DAY = 86_400_000;
-export const initialProfile = { name: '', started: {}, passed: {}, reviews: {}, attempts: [] };
+export const initialProfile = { name: '', goal: '', format: 'example', started: {}, passed: {}, reviews: {}, attempts: [] };
 
 export function ready(topic, profile) {
   return !topic.prerequisite || Boolean(profile.passed[topic.prerequisite]);
@@ -22,8 +22,8 @@ export function recordAttempt(profile, mode, subject, answers, correct, now = Da
   return next;
 }
 
-export function trackPassed(track, profile) {
+export function modulePassed(module, profile) {
   return profile.attempts.some(attempt =>
-    attempt.mode === 'mixed' && attempt.subject === track.id && attempt.score === attempt.total
+    attempt.mode === module.mode && attempt.subject === module.subject && attempt.score === attempt.total
   );
 }

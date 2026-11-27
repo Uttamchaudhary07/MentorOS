@@ -242,3 +242,32 @@ input[type=checkbox], input[type=radio] { accent-color: var(--blue); width: 16px
 }
 .tabs { flex-wrap: wrap; }
 .lab-grid select { min-height: 40px; padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; background: white; margin-bottom: 9px; }
+.hero-content { max-width: min(100%, 40rem); }
+.hero-content > p { max-width: 34rem; }
+.hero-actions { display: flex; flex-wrap: wrap; gap: .55rem; }
+.hero-outline { color: white; background: #15296670; border-color: #d1dfff80; }
+.hero-outline:hover { background: #152966; }
+.name-form select { min-height: 2.7rem; border: 1px solid #d3dce9; border-radius: 8px; background: white; color: #26334b; padding: .4rem .65rem; }
+.plan-action > span { min-width: 0; }
+.plan-action > a { flex-shrink: 0; }
+.curriculum-module > summary { cursor: pointer; padding: .85rem 1rem; }
+.curriculum-module > summary > span { float: right; color: var(--muted); font-size: .88rem; }
+.module-body { padding: 0 .65rem .55rem; }
+.module-body .level-row { border-top: 1px solid var(--line); }
+.module-body .level-row:is(a):hover { background: #f2f6ff; box-shadow: none; }
+.practice-criteria { color: #455671; }
+.practice-criteria ul { margin: .25rem 0; padding-inline-start: 1.35rem; }
+.lesson-flow { list-style: none; padding: 0; margin: .75rem 0 0; display: grid; gap: .6rem; }
+.lesson-flow > li { padding: .75rem 1rem; border-left: 3px solid #6685f4; background: #f3f6fd; border-radius: .4rem; }
+.lesson-flow strong { color: #2347b6; }
+@media (max-width: 440px) {
+  .plan-action { align-items: flex-start; flex-direction: column; padding: .65rem 0; }
+  .curriculum-module > summary > span { float: none; display: block; }
+}
+.search-trace { margin-top: 1rem; }
+.search-trace > label { display: inline-flex; align-items: center; gap: .5rem; margin-top: .6rem; }
+.search-trace select { padding: .25rem .45rem; border: 1px solid var(--line); border-radius: .4rem; background: white; }
+.trace-cells { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: .25rem; list-style: none; padding: 0; }
+.trace-cells li { display: grid; place-items: center; padding: .4rem .1rem; background: #eaf0ff; border: 1px solid #cbd9ff; border-radius: .38rem; }
+.trace-cells li.trace-mid { background: #3156d9; color: white; border-color: #3156d9; }
+.trace-cells li.trace-excluded { background: #f5f6f9; border-color: var(--line); color: #61718b; }
